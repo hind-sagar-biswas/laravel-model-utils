@@ -34,8 +34,7 @@
     },
     "autoload": {
         "psr-4": {
-            "HindBiswas\\ModelUtils\\": "src/",
-            "HindBiswas\\ModelUtils\\Database\\Factories\\": "database/factories/"
+            "HindBiswas\\ModelUtils\\": "src/"
         }
     },
     "autoload-dev": {
