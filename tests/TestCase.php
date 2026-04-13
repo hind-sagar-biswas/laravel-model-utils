@@ -2,9 +2,9 @@
 
 namespace HindBiswas\ModelUtils\Tests;
 
+use HindBiswas\ModelUtils\ModelUtilsServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
-use HindBiswas\ModelUtils\ModelUtilsServiceProvider;
 
 class TestCase extends Orchestra
 {

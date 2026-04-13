@@ -2,9 +2,9 @@
 
 namespace HindBiswas\ModelUtils;
 
+use HindBiswas\ModelUtils\Commands\ModelUtilsCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use HindBiswas\ModelUtils\Commands\ModelUtilsCommand;
 
 class ModelUtilsServiceProvider extends PackageServiceProvider
 {
