@@ -6,10 +6,7 @@ parameters:
     ignoreErrors:
         -
             identifier: trait.unused
-            path: src/Traits/BelongsToAuth.php
-        -
-            identifier: trait.unused
-            path: src/Traits/Optionable.php
+            path: src/Traits/
     paths:
         - src
     tmpDir: build/phpstan
