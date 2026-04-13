@@ -20,8 +20,17 @@ class EnumUtil
 
         $isBacked = is_subclass_of($enumClass, BackedEnum::class);
 
+        if ($isBacked) {
+            /** @var class-string<BackedEnum> $enumClass */
+
+            return array_map(
+                static fn (BackedEnum $case): string|int => $case->value,
+                $enumClass::cases()
+            );
+        }
+
         return array_map(
-            fn (UnitEnum $case) => $isBacked ? $case->value : $case->name,
+            static fn (UnitEnum $case): string => $case->name,
             $enumClass::cases()
         );
     }
@@ -77,8 +86,9 @@ class EnumUtil
     private static function getLabel(UnitEnum $case): string
     {
         if (method_exists($case, 'label')) {
-            /** @var mixed $case */
-            return $case->label();
+            $label = \Closure::fromCallable([$case, 'label']);
+
+            return $label();
         }
 
         $identifier = $case instanceof BackedEnum ? (string) $case->value : $case->name;

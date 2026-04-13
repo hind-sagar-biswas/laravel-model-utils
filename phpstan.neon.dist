@@ -3,6 +3,13 @@ includes:
 
 parameters:
     level: 5
+    ignoreErrors:
+        -
+            identifier: trait.unused
+            path: src/Traits/BelongsToAuth.php
+        -
+            identifier: trait.unused
+            path: src/Traits/Optionable.php
     paths:
         - src
     tmpDir: build/phpstan
