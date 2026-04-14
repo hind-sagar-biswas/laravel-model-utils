@@ -1,15 +1,13 @@
 # Laravel Model Utils
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/hindbiswas/laravel-model-utils.svg?style=flat-square)](https://packagist.org/packages/hindbiswas/laravel-model-utils)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/hindbiswas/laravel-model-utils/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/hindbiswas/laravel-model-utils/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/hindbiswas/laravel-model-utils/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/hindbiswas/laravel-model-utils/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/hindbiswas/laravel-model-utils/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/hind-sagar-biswas/laravel-model-utils/actions?query=workflow%3Arun-tests+branch%3Amain)
+[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/hindbiswas/laravel-model-utils/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/hind-sagar-biswas/laravel-model-utils/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/hindbiswas/laravel-model-utils.svg?style=flat-square)](https://packagist.org/packages/hindbiswas/laravel-model-utils)
 
 A lightweight Laravel package that adds practical Eloquent model traits and utilities.
 
 ## Installation
-
-You can install the package via composer:
 
 ```bash
 composer require hindbiswas/laravel-model-utils
@@ -24,21 +22,16 @@ composer require hindbiswas/laravel-model-utils
 
 - `BelongsToAuth`: auto-assign `user_id` when an authenticated user creates a model.
 - `Optionable`: convert model records to `value`/`label` option arrays.
-- `Filterable`: dynamic exact filters + relationship-aware search with dot notation.
+- `Filterable`: dynamic exact filters plus relationship-aware search with dot notation.
 - `HasSlug`: generate slugs from model attributes with optional uniqueness and update behavior.
+- `Archivable`: archive/restore records with query scopes for active and archived models.
 - `EnumUtil`: convert PHP enums to arrays, CSV, associative maps, and options.
 
 ## Usage
 
 ### BelongsToAuth Trait
 
-Use this trait when you want `user_id` to be automatically set during creation.
-
 ```php
-<?php
-
-namespace App\Models;
-
 use HindBiswas\ModelUtils\Traits\BelongsToAuth;
 use Illuminate\Database\Eloquent\Model;
 
@@ -57,13 +50,7 @@ Behavior:
 
 ### Optionable Trait
 
-Use this trait to return model data as dropdown/select options.
-
 ```php
-<?php
-
-namespace App\Models;
-
 use HindBiswas\ModelUtils\Traits\Optionable;
 use Illuminate\Database\Eloquent\Model;
 
@@ -83,7 +70,7 @@ Category::options();
 // ]
 ```
 
-Customize fields:
+You can override the columns used for options:
 
 ```php
 protected static function optionValue(): string
@@ -99,13 +86,7 @@ protected static function optionLabel(): string
 
 ### Filterable Trait
 
-Use this trait for dynamic exact filtering and free-text searching, including related model fields.
-
 ```php
-<?php
-
-namespace App\Models;
-
 use HindBiswas\ModelUtils\Traits\Filterable;
 use Illuminate\Database\Eloquent\Model;
 
@@ -139,19 +120,13 @@ $articles = Article::query()->filter([
 
 Notes:
 
-- Exact filters use `where`/`whereHas`.
-- Search uses grouped `orWhere`/`orWhereHas` with `%search%` matching.
+- Exact filters use `where` and `whereHas`.
+- Search uses grouped `orWhere` and `orWhereHas` with `%search%` matching.
 - Dot notation supports nested relations like `owner.user.name`.
 
 ### HasSlug Trait
 
-Use this trait to auto-generate slugs from one or more attributes.
-
 ```php
-<?php
-
-namespace App\Models;
-
 use HindBiswas\ModelUtils\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Model;
 
@@ -181,7 +156,7 @@ class Post extends Model
 Available hooks:
 
 - `slugField()`: slug column name (default: `slug`).
-- `slugSource()`: source attributes used to build slug (default: empty array).
+- `slugSource()`: source attributes used to build slug.
 - `slugUniqueScope()`: controls uniqueness.
   - `false`: no uniqueness checks.
   - `true`: unique across table.
@@ -189,26 +164,56 @@ Available hooks:
 - `maxSlugLength()`: maximum slug length (default: `255`).
 - `updateSlugOnUpdate()`: regenerate slug when source fields change.
 
-`getRouteKeyName()` automatically returns `slugField()`.
+`getRouteKeyName()` returns `slugField()`.
+
+### Archivable Trait
+
+```php
+use HindBiswas\ModelUtils\Traits\Archivable;
+use Illuminate\Database\Eloquent\Model;
+
+class Document extends Model
+{
+    use Archivable;
+
+    protected $guarded = [];
+}
+```
+
+Your table should have an `archived_at` nullable datetime column.
+
+```php
+Schema::table('documents', function (Blueprint $table) {
+    $table->dateTime('archived_at')->nullable();
+});
+```
+
+```php
+$document->archive();
+$document->restoreArchive();
+$document->isArchived();
+
+Document::query()->onlyArchived()->get();
+Document::query()->withArchived()->get();
+```
+
+Behavior:
+
+- Active records are returned by default because a global scope excludes archived rows.
+- `onlyArchived()` fetches only archived records.
+- `withArchived()` fetches both active and archived records.
+- `archived_at` is cast to `datetime` automatically.
 
 ### EnumUtil Helper
 
-`EnumUtil` provides static helpers for pure and backed enums.
-
 ```php
-<?php
-
-namespace App\Enums;
+use HindBiswas\ModelUtils\Utils\EnumUtil;
 
 enum OrderStatus: string
 {
     case Draft = 'draft';
     case Published = 'published';
 }
-```
-
-```php
-use HindBiswas\ModelUtils\Utils\EnumUtil;
 
 EnumUtil::toArray(OrderStatus::class);
 // ['draft', 'published']
@@ -228,17 +233,9 @@ EnumUtil::toOptions(OrderStatus::class);
 
 If enum cases implement a `label()` method, `EnumUtil` uses it. Otherwise, labels are generated using `Str::headline(...)`.
 
-## Quality and Test Coverage
-
-Run tests:
-
-```bash
-composer test
-```
-
 ## Changelog
 
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
+Please see [CHANGELOG](CHANGELOG.md) for details.
 
 ## Contributing
 
