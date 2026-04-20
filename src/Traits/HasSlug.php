@@ -38,7 +38,7 @@ trait HasSlug
      */
     protected function slugUniqueScope(): array|bool
     {
-        return false;
+        return true;
     }
 
     /**
