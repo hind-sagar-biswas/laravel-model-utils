@@ -26,6 +26,7 @@ composer require hindbiswas/laravel-model-utils
 - `HasSlug`: generate slugs from model attributes with optional uniqueness and update behavior.
 - `Archivable`: archive/restore records with query scopes for active and archived models.
 - `EnumUtil`: convert PHP enums to arrays, CSV, associative maps, and options.
+- `IsSequential`: auto-assign sequential number to models within a scope.
 
 ## Usage
 
