@@ -5,6 +5,9 @@ namespace HindBiswas\ModelUtils\Traits;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * @method static void creating(\Closure|string $callback)
+ */
 trait BelongsToAuth
 {
     protected static function bootBelongsToAuth(): void

@@ -2,8 +2,14 @@
 
 namespace HindBiswas\ModelUtils\Traits;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 
+/**
+ * @method static void creating(\Closure|string $callback)
+ * @method static void updating(\Closure|string $callback)
+ * @method static Builder where($column, $operator = null, $value = null, $boolean = 'and')
+ */
 trait HasSlug
 {
     protected static function bootHasSlug(): void

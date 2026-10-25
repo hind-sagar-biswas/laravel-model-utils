@@ -2,6 +2,11 @@
 
 namespace HindBiswas\ModelUtils\Traits;
 
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * @method static void addGlobalScope(string $identifier, \Closure|\Illuminate\Database\Eloquent\Scope $scope)
+ */
 trait Archivable
 {
     public function initializeArchivable(): void
@@ -26,6 +31,7 @@ trait Archivable
 
     public function archive(): bool
     {
+        /** @var Model $this */
         if ($this->archived_at || $this->fireModelEvent('archiving') === false) {
             return false;
         }
@@ -40,6 +46,7 @@ trait Archivable
 
     public function restoreArchive(): bool
     {
+        /** @var Model $this */
         if (! $this->archived_at || $this->fireModelEvent('restoring') === false) {
             return false;
         }
@@ -54,6 +61,7 @@ trait Archivable
 
     public function isArchived(): bool
     {
+        /** @var Model $this */
         return $this->archived_at !== null;
     }
 

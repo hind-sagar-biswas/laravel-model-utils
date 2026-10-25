@@ -4,6 +4,9 @@ namespace HindBiswas\ModelUtils\Traits;
 
 use Illuminate\Database\Eloquent\Builder;
 
+/**
+ * @method static Builder query()
+ */
 trait Optionable
 {
     /**
