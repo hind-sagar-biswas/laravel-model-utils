@@ -85,7 +85,7 @@ trait IsSequential
         });
     }
 
-    protected function moveBy(int $direction): bool
+    private function moveBy(int $direction): bool
     {
         return DB::transaction(function () use ($direction) {
             /** @var Model $this */
@@ -120,7 +120,7 @@ trait IsSequential
     }
 
     /** Swap via a temp value so a unique (scope, sequence) index is never violated. */
-    protected function exchange(Model $a, Model $b): void
+    private function exchange(Model $a, Model $b): void
     {
         $seqA = $a->sequence;
         $seqB = $b->sequence;
@@ -136,7 +136,7 @@ trait IsSequential
         static::writeSequence($a, $seqB);
     }
 
-    protected static function writeSequence(Model $model, int $value): void
+    private static function writeSequence(Model $model, int $value): void
     {
         // Query-builder update: no events, no dirty-attribute side effects,
         // and updated_at is NOT touched.
@@ -152,19 +152,19 @@ trait IsSequential
         $model->syncOriginalAttribute('sequence');
     }
 
-    protected function syncSequenceFrom(Model $fresh): void
+    private function syncSequenceFrom(Model $fresh): void
     {
         /** @var Model $this */
         $this->setAttribute('sequence', $fresh->sequence);
         $this->syncOriginalAttribute('sequence');
     }
 
-    protected function sequenceScopeColumns(): array
+    private function sequenceScopeColumns(): array
     {
         return property_exists($this, 'sequentialUniqueWith') ? (array) $this->sequentialUniqueWith : [];
     }
 
-    protected static function sequenceBaseQuery(): Builder
+    private static function sequenceBaseQuery(): Builder
     {
         $query = static::query();
 
@@ -176,7 +176,7 @@ trait IsSequential
         return $query;
     }
 
-    protected static function scopedTo(Model $model): Builder
+    private static function scopedTo(Model $model): Builder
     {
         $query = static::sequenceBaseQuery();
 
@@ -187,7 +187,7 @@ trait IsSequential
         return $query;
     }
 
-    protected static function sameValue(mixed $x, mixed $y): bool
+    private static function sameValue(mixed $x, mixed $y): bool
     {
         if (is_null($x) || is_null($y)) {
             return is_null($x) && is_null($y);

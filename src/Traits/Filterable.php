@@ -24,7 +24,7 @@ trait Filterable
         $searchable = property_exists($this, 'searchable') ? $this->searchable : [];
         $search = $filters['search'] ?? null;
 
-        if ($search !== null && trim($search) !== '') {
+        if ($search !== null && trim($search) !== '' && !empty($searchable)) {
             $query->where(function (Builder $q) use ($search, $searchable) {
                 foreach ($searchable as $field) {
                     $this->applySearch($q, $field, $search);
@@ -38,7 +38,7 @@ trait Filterable
     /**
      * Apply a "Where" filter, supporting dot-notation for relationships.
      */
-    protected function applyFilter(Builder $query, string $field, mixed $value): void
+    private function applyFilter(Builder $query, string $field, mixed $value): void
     {
         if (str_contains($field, '.')) {
             $parts = explode('.', $field);
@@ -54,7 +54,7 @@ trait Filterable
     /**
      * Apply a "Like" search, supporting dot-notation for relationships.
      */
-    protected function applySearch(Builder $query, string $field, string $search): void
+    private function applySearch(Builder $query, string $field, string $search): void
     {
         if (str_contains($field, '.')) {
             $parts = explode('.', $field);

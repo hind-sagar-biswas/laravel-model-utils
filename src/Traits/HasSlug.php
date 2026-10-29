@@ -84,7 +84,7 @@ trait HasSlug
     /**
      * Check if any of the slug source attributes have been modified.
      */
-    protected function slugSourceIsDirty(): bool
+    private function slugSourceIsDirty(): bool
     {
         $dirty = $this->getDirty();
         foreach ($this->slugSource() as $attribute) {
@@ -99,7 +99,7 @@ trait HasSlug
     /**
      * Check if a slug already exists in the database.
      */
-    protected function slugExists(string $slug): bool
+    private function slugExists(string $slug): bool
     {
         $query = static::where($this->slugField(), $slug);
 
@@ -120,7 +120,7 @@ trait HasSlug
     /**
      * Generate a unique slug based on the defined source attributes and uniqueness scope.
      */
-    protected function generateSlug(): string
+    private function generateSlug(): string
     {
         if (empty($this->slugSource())) {
             throw new \LogicException('Slug source attributes must be defined to generate a slug.');
