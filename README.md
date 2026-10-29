@@ -27,6 +27,7 @@ composer require hindbiswas/laravel-model-utils
 - `Archivable`: archive/restore records with query scopes for active and archived models.
 - `EnumUtil`: convert PHP enums to arrays, CSV, associative maps, and options.
 - `IsSequential`: auto-assign sequential number to models within a scope.
+- `HasIsActive`: managing `is_active` feature.
 
 ## Usage
 
@@ -39,8 +40,6 @@ use Illuminate\Database\Eloquent\Model;
 class Post extends Model
 {
     use BelongsToAuth;
-
-    protected $guarded = [];
 }
 ```
 
@@ -48,6 +47,39 @@ Behavior:
 
 - If `user_id` is empty and a user is authenticated, `user_id` is filled from `Auth::id()`.
 - If `user_id` is already present, it is not overridden.
+
+### IsSequential
+
+For this trait to work, must add a column (preferably `unsigned`) to the table of the model with the name: `sequence`.
+
+```php
+Schema::create('subjects', function (Blueprint $table) {
+    $table->id();
+    $table->foreignIdFor(SchoolClass::class)->constrained()->cascadeOnDelete();
+    $table->string('name');
+    $table->unsignedInteger('sequence')->default(1);
+    $table->string('code', 20)->nullable();
+    $table->timestamps();
+
+    $table->unique(['school_class_id', 'sequence']);
+});
+```
+
+Here, for the example, the sequence is scoped to the `school_class_id`, and thus provide that via property.
+
+```php
+use HindBiswas\ModelUtils\Traits\IsSequential;
+use Illuminate\Database\Eloquent\Model;
+
+class Subject extends Model
+{
+    use IsSequential;
+
+    protected array $sequentialUniqueWith = ['school_class_id'];    // only if the sequence is unique in respect to one or more columns
+}
+```
+
+This comes with `moveUp()`, `moveDown()`, `swap()` methods, as well as `->sequenced()` scope for ordering.
 
 ### Optionable Trait
 
@@ -58,8 +90,6 @@ use Illuminate\Database\Eloquent\Model;
 class Category extends Model
 {
     use Optionable;
-
-    protected $guarded = [];
 }
 ```
 
@@ -94,8 +124,6 @@ use Illuminate\Database\Eloquent\Model;
 class Article extends Model
 {
     use Filterable;
-
-    protected $guarded = [];
 
     protected array $filterable = [
         'status',
@@ -135,8 +163,6 @@ class Post extends Model
 {
     use HasSlug;
 
-    protected $guarded = [];
-
     protected function slugSource(): array
     {
         return ['title'];
@@ -167,6 +193,23 @@ Available hooks:
 
 `getRouteKeyName()` returns `slugField()`.
 
+### HasIsActive Trait
+
+For this trait to work, must add a column (`boolean`) to the table of the model with the name: `is_active`.
+
+```php
+use HindBiswas\ModelUtils\Traits\HasIsActive;
+use Illuminate\Database\Eloquent\Model;
+
+class Author extends Model
+{
+    use HasIsActive;
+}
+```
+
+This comes with `->active()` & `->inactive()` scopes as well as `toggleActive()` method.
+
+
 ### Archivable Trait
 
 ```php
@@ -176,8 +219,6 @@ use Illuminate\Database\Eloquent\Model;
 class Document extends Model
 {
     use Archivable;
-
-    protected $guarded = [];
 }
 ```
 
