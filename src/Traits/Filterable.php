@@ -45,7 +45,7 @@ trait Filterable
             $column = array_pop($parts);
             $relation = implode('.', $parts); // supports 'owner.user' → nested whereHas
 
-            $query->whereHas($relation, fn ($q) => $q->where($column, $value));
+            $query->whereHas($relation, fn ($q) => $q->where($q->getModel()->qualifyColumn($column), $value));
         } else {
             $query->where($query->getModel()->getTable().'.'.$field, $value);
         }
@@ -61,7 +61,7 @@ trait Filterable
             $column = array_pop($parts);
             $relation = implode('.', $parts);
 
-            $query->orWhereHas($relation, fn ($q) => $q->where($column, 'like', "%{$search}%"));
+            $query->orWhereHas($relation, fn ($q) => $q->where($q->getModel()->qualifyColumn($column), 'like', "%{$search}%"));
         } else {
             $query->orWhere($query->getModel()->getTable().'.'.$field, 'like', "%{$search}%");
         }
