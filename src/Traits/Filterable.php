@@ -24,7 +24,7 @@ trait Filterable
         $searchable = property_exists($this, 'searchable') ? $this->searchable : [];
         $search = $filters['search'] ?? null;
 
-        if ($search !== null && trim($search) !== '' && !empty($searchable)) {
+        if ($search !== null && trim($search) !== '' && ! empty($searchable)) {
             $query->where(function (Builder $q) use ($search, $searchable) {
                 foreach ($searchable as $field) {
                     $this->applySearch($q, $field, $search);
