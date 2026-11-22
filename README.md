@@ -59,6 +59,7 @@ This will publish `listing.ts` into `resources/js/types/listing.ts`.
 - `IsSequential`: auto-assign sequential number to models within a scope.
 - `HasIsActive`: automatic boolean casting, active/inactive query scopes, and state toggling.
 - `ListingParameters`: parse request query parameters (search, pagination, filters, sorting) and apply them to Eloquent queries.
+- `StrUtil`: generate secure random strings and structured receipt/order reference numbers.
 
 ## Usage
 
@@ -330,6 +331,29 @@ EnumUtil::toOptions(OrderStatus::class);
 ```
 
 If enum cases implement a `label()` method, `EnumUtil` uses it. Otherwise, labels are generated using `Str::headline(...)`.
+
+### StrUtil Helper
+
+Provides string generation utilities for cryptographically secure random strings and structured, human-friendly receipt and reference numbers.
+
+```php
+use HindBiswas\ModelUtils\Utils\StrUtil;
+
+// 1. Generate a secure random string (default: 16 alphanumeric characters)
+StrUtil::random(); // e.g., 'aB3dE7gH1jK9mN5p'
+StrUtil::random(32); // 32 characters
+
+// Custom character sets
+StrUtil::random(10, '0123456789'); // Numeric only, e.g. '8392019485'
+StrUtil::random(8, 'abcdef0123456789'); // Hexadecimal lowercase
+
+// 2. Generate a structured receipt number
+// Format: {prefix}{date(midFormat)}{randomSuffix}
+// Total length matches the specified length parameter.
+// Uses an unambiguous uppercase alphanumeric character set (excludes 0, 1, I, O to prevent confusion).
+StrUtil::receipt('REC-', 16); // e.g., 'REC-2026X9K7M4P2' (midFormat defaults to 'Y')
+StrUtil::receipt('INV/', 20, 'ymd'); // e.g., 'INV/261122H3K9N2P5W8'
+```
 
 ### ListingParameters Utility
 
