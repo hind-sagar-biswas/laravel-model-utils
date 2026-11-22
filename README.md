@@ -60,6 +60,7 @@ This will publish `listing.ts` into `resources/js/types/listing.ts`.
 - `HasIsActive`: automatic boolean casting, active/inactive query scopes, and state toggling.
 - `ListingParameters`: parse request query parameters (search, pagination, filters, sorting) and apply them to Eloquent queries.
 - `StrUtil`: generate secure random strings and structured receipt/order reference numbers.
+- `Global Helpers`: convenient global functions (`parse_params()`, `receipt()`, `enum_array()`).
 
 ## Usage
 
@@ -317,6 +318,10 @@ enum OrderStatus: string
 EnumUtil::toArray(OrderStatus::class);
 // ['draft', 'published']
 
+// Or use the global helper shortcut:
+enum_array(OrderStatus::class);
+// ['draft', 'published']
+
 EnumUtil::toCSV(OrderStatus::class);
 // 'draft,published'
 
@@ -353,6 +358,9 @@ StrUtil::random(8, 'abcdef0123456789'); // Hexadecimal lowercase
 // Uses an unambiguous uppercase alphanumeric character set (excludes 0, 1, I, O to prevent confusion).
 StrUtil::receipt('REC-', 16); // e.g., 'REC-2026X9K7M4P2' (midFormat defaults to 'Y')
 StrUtil::receipt('INV/', 20, 'ymd'); // e.g., 'INV/261122H3K9N2P5W8'
+
+// Global helper shortcut
+receipt('REC-', 16);
 ```
 
 ### ListingParameters Utility
@@ -361,15 +369,16 @@ StrUtil::receipt('INV/', 20, 'ymd'); // e.g., 'INV/261122H3K9N2P5W8'
 
 #### Controller Usage
 
+You can use the `parse_params()` helper (which auto-resolves the current request if omitted) or `ListingParameters::parseRequest()` directly:
+
 ```php
 use App\Models\Article;
-use HindBiswas\ModelUtils\Utils\ListingParameters;
 use Illuminate\Http\Request;
 
 public function index(Request $request)
 {
-    $params = ListingParameters::parseRequest(
-        request: $request,
+    // Using the global helper function:
+    $params = parse_params(
         allowedSortColumns: [
             'title',
             'created_at',
@@ -377,6 +386,9 @@ public function index(Request $request)
         ],
         allowedFilters: ['status', 'category_id'] // optional whitelist (without 'ft_' prefix)
     );
+
+    // Or explicitly passing $request:
+    // $params = parse_params($request, $allowedSortColumns, $allowedFilters);
 
     $articles = $params->apply(Article::query())
         ->paginate($params->perPage);
@@ -492,6 +504,16 @@ defineProps<{
 }>();
 </script>
 ```
+
+### Global Helpers
+
+The package registers global helper functions automatically:
+
+| Helper | Description |
+|---|---|
+| `parse_params(?$request, $allowedSortColumns, $allowedFilters)` | Parses current (or passed) request into a `ListingParameters` instance. |
+| `receipt($prefix, $length, $midFormat = 'Y')` | Generates a structured reference/receipt number. |
+| `enum_array($enumClass)` | Converts backed enums to values or pure enums to names (`EnumUtil::toArray()` shortcut). |
 
 ## Changelog
 
