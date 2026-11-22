@@ -14,6 +14,19 @@ class ModelUtilsServiceProvider extends PackageServiceProvider
          *
          * More info: https://github.com/spatie/laravel-package-tools
          */
-        $package->name('laravel-model-utils');
+        $package->name('laravel-model-utils')->hasConfigFile('lmu');
+    }
+
+    public function packageBooted(): void
+    {
+        if ($this->app->runningInConsole()) {
+            $this->publishes([
+                __DIR__.'/../config/lmu.php' => config_path('lmu.php'),
+            ], 'lmu-config');
+
+            $this->publishes([
+                __DIR__.'/../resources/types/listing.ts' => resource_path('js/types/listing.ts'),
+            ], 'lmu-types');
+        }
     }
 }

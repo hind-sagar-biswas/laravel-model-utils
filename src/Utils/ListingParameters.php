@@ -233,9 +233,9 @@ class ListingParameters
         $search = $request->filled('search') ? trim((string) $request->input('search')) : null;
 
         // 2. Pagination limits
-        $minPerPage = (int) config('app.pagination.min', 10);
-        $defaultPerPage = (int) config('app.pagination.default', 30);
-        $maxPerPage = (int) config('app.pagination.max', 100);
+        $minPerPage = (int) config('lmu.pagination.min', 10);
+        $defaultPerPage = (int) config('lmu.pagination.default', 30);
+        $maxPerPage = (int) config('lmu.pagination.max', 100);
 
         $perPage = (int) $request->input('per_page', $defaultPerPage);
         if ($perPage < $minPerPage) {

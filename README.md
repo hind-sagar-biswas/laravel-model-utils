@@ -13,6 +13,36 @@ A lightweight Laravel package that adds practical Eloquent model traits and util
 composer require hindbiswas/laravel-model-utils
 ```
 
+### Publishing Configuration (Optional)
+
+You can publish the package configuration file with:
+
+```bash
+php artisan vendor:publish --tag="lmu-config"
+```
+
+This publishes `config/lmu.php`:
+
+```php
+return [
+    'pagination' => [
+        'min' => (int) env('LMU_PAGINATION_MIN', 10),
+        'max' => (int) env('LMU_PAGINATION_MAX', 100),
+        'default' => (int) env('LMU_PAGINATION_DEFAULT', 30),
+    ],
+];
+```
+
+### Publishing TypeScript Types (Optional)
+
+For Inertia.js, Vue, or React frontends, you can publish TypeScript interfaces for `ListingParameters`:
+
+```bash
+php artisan vendor:publish --tag="lmu-types"
+```
+
+This will publish `listing.ts` into `resources/js/types/listing.ts`.
+
 ## Requirements
 
 - PHP 8.3+
@@ -27,7 +57,8 @@ composer require hindbiswas/laravel-model-utils
 - `Archivable`: archive/restore records with query scopes for active and archived models.
 - `EnumUtil`: convert PHP enums to arrays, CSV, associative maps, and options.
 - `IsSequential`: auto-assign sequential number to models within a scope.
-- `HasIsActive`: managing `is_active` feature.
+- `HasIsActive`: automatic boolean casting, active/inactive query scopes, and state toggling.
+- `ListingParameters`: parse request query parameters (search, pagination, filters, sorting) and apply them to Eloquent queries.
 
 ## Usage
 
@@ -195,7 +226,15 @@ Available hooks:
 
 ### HasIsActive Trait
 
-For this trait to work, must add a column (`boolean`) to the table of the model with the name: `is_active`.
+For this trait to work, add a `boolean` column named `is_active` to the table:
+
+```php
+Schema::table('authors', function (Blueprint $table) {
+    $table->boolean('is_active')->default(true);
+});
+```
+
+Add the trait to your model:
 
 ```php
 use HindBiswas\ModelUtils\Traits\HasIsActive;
@@ -207,7 +246,24 @@ class Author extends Model
 }
 ```
 
-This comes with `->active()` & `->inactive()` scopes as well as `toggleActive()` method.
+Behavior & Features:
+
+- **Automatic Casting**: Automatically registers `'is_active' => 'boolean'` in the model's attribute casts upon initialization, preserving any custom casts already defined.
+- **Query Scopes**:
+  ```php
+  // Retrieve only active records (where is_active = true)
+  Author::query()->active()->get();
+
+  // Retrieve only inactive records (where is_active = false)
+  Author::query()->inactive()->get();
+  ```
+- **Toggle Active**:
+  ```php
+  $author = Author::first();
+
+  // Inverts is_active boolean value and persists to database
+  $author->toggleActive();
+  ```
 
 
 ### Archivable Trait
@@ -274,6 +330,144 @@ EnumUtil::toOptions(OrderStatus::class);
 ```
 
 If enum cases implement a `label()` method, `EnumUtil` uses it. Otherwise, labels are generated using `Str::headline(...)`.
+
+### ListingParameters Utility
+
+`ListingParameters` parses, validates, and applies HTTP listing query parameters (search query, pagination limits, sorting column/direction, and `ft_` prefixed filters) directly to Eloquent query builders.
+
+#### Controller Usage
+
+```php
+use App\Models\Article;
+use HindBiswas\ModelUtils\Utils\ListingParameters;
+use Illuminate\Http\Request;
+
+public function index(Request $request)
+{
+    $params = ListingParameters::parseRequest(
+        request: $request,
+        allowedSortColumns: [
+            'title',
+            'created_at',
+            'custom_ranking' => fn ($query, $direction) => $query->orderBy('views', $direction),
+        ],
+        allowedFilters: ['status', 'category_id'] // optional whitelist (without 'ft_' prefix)
+    );
+
+    $articles = $params->apply(Article::query())
+        ->paginate($params->perPage);
+
+    return view('articles.index', compact('articles', 'params'));
+}
+```
+
+#### Query String Conventions
+
+- **Search**: `?search=Laravel` &mdash; trimmed string keyword.
+- **Pagination**: `?per_page=25` &mdash; clamped between configured min and max bounds (defaults: min 10, default 30, max 100).
+- **Sorting**: `?sort_by=title&order=desc` &mdash; validated against `allowedSortColumns`, and `order` is strictly `'asc'` or `'desc'`.
+- **Filters**: `?ft_status=published&ft_category_id=5` &mdash; only inputs prefixed with `ft_` are extracted as filters (stripping the `ft_` prefix, dropping empty strings and nulls).
+
+#### What `apply()` Handles
+
+When `$params->apply($query)` is called:
+1. **SoftDeletes**: Automatically applies `withTrashed()` if a `trashed` filter is present and the model uses Laravel's `SoftDeletes` trait.
+2. **Filterable Integration**: If the model uses the `Filterable` trait (or defines `scopeFilter`), passes all filters and search term via `$query->filter(...)`.
+3. **Fallback Search**: If the model lacks `Filterable` but defines a `$searchable` property array (e.g. `public array $searchable = ['title', 'content'];`), groups `orWhere` `like %search%` clauses across those fields.
+4. **Sorting**:
+   - Executes custom closure sorters if registered in `allowedSortColumns`.
+   - Otherwise applies standard column sorting with asc/desc direction.
+   - If `sort_by` is not specified, falls back to `IsSequential` (`sequenced()`) if present, or latest `created_at` timestamp.
+   - Applies deterministic secondary ordering by the model's primary key.
+
+#### Helper Methods
+
+```php
+// Check and inspect parameters
+$params->has('status');      // bool
+$params->get('status');      // mixed
+$params->set('status', 'draft');
+
+// Array transformations
+$params->toArray();          // Associative array with search, per_page, sort_by, order, filters
+$params->prefixedFilters();  // ['ft_status' => 'published'] (restores 'ft_' prefix)
+$params->forScopeFilter();   // Filters array combined with 'search' keyword
+```
+
+#### Pagination Configuration
+
+Pagination limits can be customized by publishing `config/lmu.php`:
+
+```bash
+php artisan vendor:publish --tag="lmu-config"
+```
+
+In `config/lmu.php`:
+
+```php
+return [
+    'pagination' => [
+        'min' => (int) env('LMU_PAGINATION_MIN', 10),
+        'max' => (int) env('LMU_PAGINATION_MAX', 100),
+        'default' => (int) env('LMU_PAGINATION_DEFAULT', 30),
+    ],
+];
+```
+
+You can also adjust these directly in your `.env` file without publishing:
+
+```env
+LMU_PAGINATION_MIN=10
+LMU_PAGINATION_MAX=100
+LMU_PAGINATION_DEFAULT=30
+```
+
+#### TypeScript Types for Frontend (Inertia.js / Vue / React)
+
+When passing `params` to your frontend via Inertia.js (e.g., `$params->toArray()`), you can publish the matching TypeScript interfaces:
+
+```bash
+php artisan vendor:publish --tag="lmu-types"
+```
+
+This publishes `listing.ts` to `resources/js/types/listing.ts`:
+
+```typescript
+export type SortOrder = 'asc' | 'desc';
+export type FilterValue =
+    | string
+    | number
+    | boolean
+    | null
+    | Array<string | number>;
+
+/** Mirrors ListingParameters::toArray() */
+export interface ListingProps<F extends string = string> {
+    search: string | null;
+    per_page: number;
+    sort_by: string | null;
+    order: SortOrder | null;
+    filters: Partial<Record<F, FilterValue>> | [];
+}
+```
+
+Example usage in an Inertia Vue component (`Index.vue`):
+
+```vue
+<script setup lang="ts">
+import type { ListingProps } from '@/types/listing';
+
+type ArticleFilters = 'status' | 'category_id';
+
+defineProps<{
+    articles: {
+        data: Array<{ id: number; title: string }>;
+        // ... pagination links & meta
+    };
+    params: ListingProps<ArticleFilters>;
+}>();
+</script>
+```
 
 ## Changelog
 

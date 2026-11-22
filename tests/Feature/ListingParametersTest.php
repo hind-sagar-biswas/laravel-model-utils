@@ -275,13 +275,13 @@ it('nullifies search when empty or not filled', function () {
 });
 
 it('handles pagination limits with defaults and clamps', function () {
-    config()->set('app.pagination.min', 10);
-    config()->set('app.pagination.default', 30);
-    config()->set('app.pagination.max', 100);
+    config()->set('lmu.pagination.min', 15);
+    config()->set('lmu.pagination.default', 35);
+    config()->set('lmu.pagination.max', 85);
 
     // Default when omitted
     $defaultReq = Request::create('/test', 'GET', []);
-    expect(ListingParameters::parseRequest($defaultReq)->perPage)->toBe(30);
+    expect(ListingParameters::parseRequest($defaultReq)->perPage)->toBe(35);
 
     // Within bounds
     $normalReq = Request::create('/test', 'GET', ['per_page' => 50]);
@@ -289,11 +289,11 @@ it('handles pagination limits with defaults and clamps', function () {
 
     // Clamped below min
     $tooLowReq = Request::create('/test', 'GET', ['per_page' => 5]);
-    expect(ListingParameters::parseRequest($tooLowReq)->perPage)->toBe(10);
+    expect(ListingParameters::parseRequest($tooLowReq)->perPage)->toBe(15);
 
     // Clamped above max
     $tooHighReq = Request::create('/test', 'GET', ['per_page' => 200]);
-    expect(ListingParameters::parseRequest($tooHighReq)->perPage)->toBe(100);
+    expect(ListingParameters::parseRequest($tooHighReq)->perPage)->toBe(85);
 });
 
 it('whitelists allowed sort columns and filters out disallowed ones', function () {
