@@ -1,8 +1,8 @@
 # Laravel Model Utils
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/hindbiswas/laravel-model-utils.svg?style=flat-square)](https://packagist.org/packages/hindbiswas/laravel-model-utils)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/hindbiswas/laravel-model-utils/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/hind-sagar-biswas/laravel-model-utils/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/hindbiswas/laravel-model-utils/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/hind-sagar-biswas/laravel-model-utils/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/hind-sagar-biswas/laravel-model-utils/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/hind-sagar-biswas/laravel-model-utils/actions?query=workflow%3Arun-tests+branch%3Amain)
+[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/hind-sagar-biswas/laravel-model-utils/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/hind-sagar-biswas/laravel-model-utils/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/hindbiswas/laravel-model-utils.svg?style=flat-square)](https://packagist.org/packages/hindbiswas/laravel-model-utils)
 
 A lightweight Laravel package that adds practical Eloquent model traits and utilities.
@@ -35,7 +35,7 @@ return [
 
 ### Publishing TypeScript Types (Optional)
 
-For Inertia.js, Vue, or React frontends, you can publish TypeScript interfaces for `ListingParameters`:
+For Inertia.js, Vue, or React frontend, you can publish TypeScript interfaces for `ListingParameters`:
 
 ```bash
 php artisan vendor:publish --tag="lmu-types"
